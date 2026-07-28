@@ -135,13 +135,13 @@ function openProductInline(productId, cardElement) {
     const detailDiv = document.createElement('div');
     detailDiv.className = 'inline-detail';
     
-    // Notice the new onmousemove and onmouseleave events added to the image container
+    // UPDATED: Added onmouseenter to force the zoom start
     detailDiv.innerHTML = `
         <button class="close-inline-btn" onclick="this.parentElement.remove()">
             <i class="fas fa-times"></i>
         </button>
         <div class="inline-gallery">
-            <div class="inline-main-img-container" onmousemove="zoomImage(event, this)" onmouseleave="resetZoom(this)">
+            <div class="inline-main-img-container" onmouseenter="startZoom(this)" onmousemove="zoomImage(event, this)" onmouseleave="resetZoom(this)">
                 <img src="${product.images[0]}" class="main-inline-img" id="main-img-${product.id}" alt="${product.name}">
             </div>
             <div class="inline-thumbnails">
@@ -176,28 +176,40 @@ function openProductInline(productId, cardElement) {
     detailDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// === NEW ZOOM MAGNIFIER LOGIC ===
-function zoomImage(e, container) {
+// === BULLETPROOF JS ZOOM MAGNIFIER ===
+
+function startZoom(container) {
+    if (window.innerWidth < 768) return; // Prevent zooming on mobile phones
     const img = container.querySelector('.main-inline-img');
-    const rect = container.getBoundingClientRect();
+    if (img) img.style.transform = 'scale(2.5)'; // Forcibly scales via JS
+}
+
+function zoomImage(e, container) {
+    if (window.innerWidth < 768) return;
+    const img = container.querySelector('.main-inline-img');
+    if (!img) return;
     
-    // Find exact mouse position inside the box
+    const rect = container.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Convert to percentages
     const xPercent = (x / rect.width) * 100;
     const yPercent = (y / rect.height) * 100;
     
-    // Move the image's anchor point to wherever the mouse is
     img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
 }
 
 function resetZoom(container) {
     const img = container.querySelector('.main-inline-img');
-    // Snap back to the center when the mouse leaves
-    img.style.transformOrigin = 'center center';
+    if (img) {
+        img.style.transform = 'scale(1)'; // Resets the scale
+        setTimeout(() => {
+            img.style.transformOrigin = 'center center'; // Re-centers the origin safely
+        }, 150); 
+    }
 }
+
+// ===================================
 
 function changeQtyInline(amount, btnElement) {
     const input = btnElement.parentElement.querySelector('.inline-qty');
