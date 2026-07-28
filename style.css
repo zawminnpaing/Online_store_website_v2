@@ -57,7 +57,7 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
 .filter-btn { background: transparent; border: none; font-size: 0.8rem; color: #fff; cursor: pointer; padding: 0.4rem 0.6rem; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .filter-btn.active { font-weight: 600; border-bottom-color: var(--accent); }
 
-/* === MAIN GRID (SQUARE CARDS FOR COMPACTNESS) === */
+/* Main Grid */
 .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
 @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(4, 1fr); gap: 1.5rem; } }
 
@@ -69,8 +69,7 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
 .product-card:hover { border-color: rgba(255,255,255,0.3); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
 
 .img-container { 
-    background-color: #000; width: 100%; 
-    aspect-ratio: 1 / 1; /* Changed to Square. This massively reduces vertical height! */
+    background-color: #000; width: 100%; aspect-ratio: 1 / 1; 
     position: relative; border-bottom: 1px solid var(--border-color); overflow: hidden; 
     -webkit-mask-image: -webkit-radial-gradient(white, black); transform: translateZ(0);
 }
@@ -96,7 +95,7 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
     border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem; display: inline-block; width: 100%;
 }
 
-/* === PROPORTIONAL INLINE REVEAL (Fixes the tiny image & stretched button) === */
+/* === INLINE REVEAL WITH ZOOM MAGNIFIER === */
 .inline-detail { 
     grid-column: 1 / -1; 
     background: rgba(10, 10, 10, 0.95); 
@@ -106,7 +105,7 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
     padding: 1.2rem; 
     display: flex; 
     flex-direction: row; 
-    align-items: stretch; /* Forces inner items to match height */
+    align-items: stretch; 
     gap: 1.2rem; 
     animation: slideDown 0.3s ease-out; 
     box-shadow: 0 15px 40px rgba(0,0,0,0.6);
@@ -118,74 +117,63 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
     display: flex; 
     flex-direction: column; 
     gap: 6px; 
-    width: 140px; /* Increased from 100px so you can actually see the product */
+    width: 140px; 
     flex-shrink: 0;
 }
+
+/* NEW: The container that clips the zoomed image so it doesn't bleed */
+.inline-main-img-container {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: #000;
+    overflow: hidden; 
+    position: relative;
+    cursor: zoom-in;
+}
+
+/* NEW: The image that scales up and tracks the mouse */
 .main-inline-img { 
     width: 100%; 
-    aspect-ratio: 1 / 1; /* Matches main card */
+    height: 100%; 
     object-fit: cover; 
-    border-radius: 8px; 
-    border: 1px solid var(--border-color); 
-    background: #000; 
+    transition: transform 0.1s ease-out; /* Super smooth tracking */
+    transform-origin: center center;
 }
-.inline-thumbnails { 
-    display: flex; 
-    gap: 6px; 
-    overflow-x: auto; 
-    padding-bottom: 2px; 
+
+/* Only enable hover zoom on devices with a physical mouse */
+@media (hover: hover) {
+    .inline-main-img-container:hover .main-inline-img {
+        transform: scale(2.5); /* 2.5x magnification */
+    }
 }
-.inline-thumbnails img { 
-    width: 35px; 
-    height: 35px; 
-    object-fit: cover; 
-    border-radius: 4px; 
-    cursor: pointer; 
-    border: 1px solid rgba(255,255,255,0.2); 
-}
+
+.inline-thumbnails { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.inline-thumbnails img { width: 35px; height: 35px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
 
 .inline-info-wrapper { flex: 1; display: flex; flex-direction: column; padding-right: 1.5rem; justify-content: center; }
 .inline-desc { 
-    font-size: 0.75rem; 
-    color: var(--text-muted); 
-    margin-bottom: 0.5rem; 
-    line-height: 1.4; 
-    display: -webkit-box; 
-    -webkit-line-clamp: 3; /* Allows up to 3 lines before truncating */
-    -webkit-box-orient: vertical; 
-    overflow: hidden; 
+    font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.4; 
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; 
 } 
 
-.inline-controls { 
-    display: flex; 
-    align-items: center; 
-    gap: 0.8rem; 
-    flex-wrap: wrap; 
-    margin-top: auto; /* Pushes controls to the bottom */
-    padding-top: 0.5rem;
-}
+.inline-controls { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-top: auto; padding-top: 0.5rem; }
 .qty-selector { display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; background: rgba(0,0,0,0.5); }
 .qty-selector button { background: transparent; color: #fff; border: none; padding: 0.3rem 0.8rem; cursor: pointer; font-size: 1rem; }
 .qty-selector input { width: 30px; text-align: center; background: transparent; color: #fff; border: none; font-weight: 600; outline: none; font-size: 0.85rem; }
 
 .add-to-cart-btn { 
-    background: var(--accent); 
-    color: white; border: none; 
-    padding: 0.5rem 1rem; 
-    font-size: 0.75rem; font-weight: 600; cursor: pointer; border-radius: 4px; 
-    text-transform: uppercase; letter-spacing: 1px; 
-    flex-grow: 1; 
-    max-width: 200px; /* Constrains it so it doesn't stretch infinitely on desktops */
-    text-align: center; 
+    background: var(--accent); color: white; border: none; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; border-radius: 4px; 
+    text-transform: uppercase; letter-spacing: 1px; flex-grow: 1; max-width: 200px; text-align: center; 
 }
 
 .close-inline-btn { position: absolute; top: 12px; right: 15px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.3rem; z-index: 10; transition: color 0.2s;}
 .close-inline-btn:hover { color: #fff; }
 
-/* Desktop Scaling for the Reveal */
 @media (min-width: 768px) { 
     .inline-detail { padding: 2rem; gap: 2.5rem; }
-    .inline-gallery { width: 250px; } /* Large and clear on laptops */
+    .inline-gallery { width: 250px; } 
     .inline-thumbnails img { width: 50px; height: 50px; }
     .add-to-cart-btn { font-size: 0.9rem; padding: 0.7rem 1.5rem; }
 }
