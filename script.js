@@ -11,6 +11,9 @@ const cartView = document.getElementById('cart-view');
 const mainGrid = document.getElementById('product-grid');
 
 document.addEventListener('DOMContentLoaded', () => {
+    renderSkeletons(mainGrid, 8);
+    renderSkeletons(document.getElementById('new-arrivals-grid'), 4);
+    renderSkeletons(document.getElementById('trending-grid'), 4);
     fetchStoreData();
 });
 
@@ -58,20 +61,29 @@ function fetchStoreData() {
 }
 
 function getSectionProducts(targetTag, allProducts, limit = 4) {
-    const taggedProducts = allProducts.filter(p => p.tags.some(t => t.toLowerCase() === targetTag.toLowerCase()));
-    if (taggedProducts.length > 0) return taggedProducts.slice(0, limit);
+    const tagged = allProducts.filter(p => p.tags.some(t => t.toLowerCase() === targetTag.toLowerCase()));
+    if (tagged.length > 0) return tagged.slice(0, limit);
 
-    const fallbackProducts = [];
-    const seenSubCategories = new Set();
+    const fallback = [];
+    const seen = new Set();
     for (const p of allProducts) {
-        const groupingKey = p.subCategory ? p.subCategory.trim() : p.category.trim(); 
-        if (!seenSubCategories.has(groupingKey)) {
-            seenSubCategories.add(groupingKey);
-            fallbackProducts.push(p);
-        }
-        if (fallbackProducts.length === limit) break;
+        const key = p.subCategory ? p.subCategory.trim() : p.category.trim(); 
+        if (!seen.has(key)) { seen.add(key); fallback.push(p); }
+        if (fallback.length === limit) break;
     }
-    return fallbackProducts;
+    return fallback;
+}
+
+function renderSkeletons(container, count = 8) {
+    container.innerHTML = '';
+    for(let i=0; i<count; i++) {
+        container.innerHTML += `
+            <div class="skeleton-card">
+                <div class="skeleton-box skeleton-img"></div>
+                <div class="skeleton-box skeleton-text"></div>
+                <div class="skeleton-box skeleton-text"></div>
+            </div>`;
+    }
 }
 
 function renderGrid(productsArray, container) {
@@ -79,110 +91,98 @@ function renderGrid(productsArray, container) {
     productsArray.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
-        card.id = `product-card-${product.id}`;
+        // Pass the card element itself to inject the details right after it
+        card.onclick = (e) => openProductInline(product.id, e.currentTarget);
         
         let badgesHTML = '<div class="badge-container">';
         product.tags.forEach(tag => {
-            const tagLower = tag.toLowerCase();
-            let badgeClass = ''; 
-            if (tagLower.includes('%') || tagLower.includes('off')) badgeClass = 'badge-discount';
-            else if (tagLower === 'new') badgeClass = 'badge-new';
-            else if (tagLower === 'trending') badgeClass = 'badge-trending';
-            badgesHTML += `<span class="product-badge ${badgeClass}">${tag}</span>`;
+            const isDiscount = tag.toLowerCase().includes('%') || tag.toLowerCase().includes('off');
+            badgesHTML += `<span class="product-badge ${isDiscount ? 'badge-discount' : ''}">${tag}</span>`;
         });
         badgesHTML += '</div>';
 
         let priceHTML = product.discountPrice 
-            ? `<p class="product-price"><span class="old-price">$${product.price.toFixed(2)}</span> <span class="sale-price">$${product.discountPrice.toFixed(2)}</span></p>`
+            ? `<p class="product-price"><span class="old-price">$${product.price.toFixed(2)}</span> <span class="sale-price">$${product.discountPrice.toFixed(2)}</span></p>` 
             : `<p class="product-price">$${product.price.toFixed(2)}</p>`;
 
-        // Thumbnails generation for expanded view
-        let thumbsHTML = product.images.map(img => 
-            `<img src="${img}" onclick="document.getElementById('main-img-${product.id}').src='${img}'">`
-        ).join('');
-
         card.innerHTML = `
-            <!-- Standard Clickable Area -->
-            <div class="card-standard" onclick="toggleProduct('${product.id}')">
-                ${product.tags.length > 0 ? badgesHTML : ''}
-                <div class="img-container">
-                    <img src="${product.images[0]}" class="grid-img" loading="lazy">
-                </div>
-                <div class="product-info">
-                    <p class="product-brand">${product.category}</p>
-                    <h3 class="product-title">${product.name}</h3>
-                    ${priceHTML}
-                </div>
+            ${product.tags.length > 0 ? badgesHTML : ''}
+            <div class="img-container">
+                <img src="${product.images[0]}" class="grid-img" alt="${product.name}" loading="lazy">
             </div>
-
-            <!-- Inline Expanded Details -->
-            <div class="card-expanded">
-                <div class="expanded-gallery">
-                    <img src="${product.images[0]}" class="expanded-main-img" id="main-img-${product.id}">
-                    <div class="expanded-thumbnails">${thumbsHTML}</div>
-                </div>
-                
-                <div class="expanded-info">
-                    <button class="close-expanded" onclick="toggleProduct('${product.id}', event)"><i class="fas fa-times"></i></button>
-                    <p class="product-brand">${product.category}</p>
-                    <h2>${product.name}</h2>
-                    ${priceHTML}
-                    <p class="expanded-desc">${product.description}</p>
-                    
-                    <div class="expanded-actions">
-                        <div class="qty-selector">
-                            <button onclick="changeQty('${product.id}', -1)">-</button>
-                            <input type="number" id="qty-${product.id}" value="1" readonly>
-                            <button onclick="changeQty('${product.id}', 1)">+</button>
-                        </div>
-                        <button class="add-to-cart-btn" id="btn-${product.id}" onclick="addToCart('${product.id}')">
-                            Add to Cart <i class="fas fa-shopping-bag"></i>
-                        </button>
-                    </div>
-                </div>
+            <div class="product-info">
+                <p class="product-brand">${product.category}</p>
+                <h3 class="product-title">${product.name}</h3>
+                ${priceHTML}
             </div>
         `;
         container.appendChild(card);
     });
 }
 
-// === NEW INLINE TOGGLE LOGIC ===
-function toggleProduct(id, event) {
-    if (event) event.stopPropagation(); // Prevents double firing if close button is clicked
+// === NEW: INLINE EXPANSION LOGIC ===
+function openProductInline(productId, cardElement) {
+    // 1. Remove any currently open inline details
+    document.querySelectorAll('.inline-detail').forEach(el => el.remove());
 
-    const targetCard = document.getElementById(`product-card-${id}`);
-    const isAlreadyOpen = targetCard.classList.contains('is-open');
+    const product = storeProducts.find(p => p.id === productId.toString());
+    if (!product) return;
 
-    // Close all cards first to keep UI clean
-    document.querySelectorAll('.product-card').forEach(card => {
-        card.classList.remove('is-open');
-        card.querySelector('.card-standard').style.display = 'block';
+    // 2. Generate Image HTML dynamically
+    let imagesHTML = '';
+    product.images.forEach(imgUrl => {
+        imagesHTML += `<img src="${imgUrl}" alt="${product.name}">`;
     });
 
-    // If the card wasn't already open, open it now
-    if (!isAlreadyOpen) {
-        targetCard.classList.add('is-open');
-        targetCard.querySelector('.card-standard').style.display = 'none'; // Hide small view
-        
-        // Slight scroll adjustment to bring details into view
-        setTimeout(() => {
-            const yOffset = -80; // Offset for sticky nav
-            const y = targetCard.getBoundingClientRect().top + window.pageYOffset + yOffset;
-            window.scrollTo({top: y, behavior: 'smooth'});
-        }, 150);
-    }
+    const activePrice = product.discountPrice ? product.discountPrice : product.price;
+
+    // 3. Create the inline container
+    const detailDiv = document.createElement('div');
+    detailDiv.className = 'inline-detail';
+    detailDiv.innerHTML = `
+        <div class="inline-images-wrapper">
+            ${imagesHTML}
+        </div>
+        <div class="inline-info-wrapper">
+            <div>
+                <button class="close-inline-btn" onclick="this.parentElement.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; margin: 0.5rem 0;">${product.name}</h2>
+                <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite.'}</p>
+                <p style="font-size: 1.2rem; font-weight: 500; margin-bottom: 1rem; color: #fff;">$${activePrice.toFixed(2)}</p>
+            </div>
+            
+            <div class="inline-controls">
+                <div class="qty-selector">
+                    <button onclick="changeQtyInline(-1, this)">-</button>
+                    <input type="number" class="inline-qty" value="1" min="1" readonly>
+                    <button onclick="changeQtyInline(1, this)">+</button>
+                </div>
+                <button class="add-to-cart-btn" onclick="addInlineToCart('${product.id}', this)">
+                    Add to Cart <i class="fas fa-shopping-bag"></i>
+                </button>
+            </div>
+        </div>
+    `;
+
+    // 4. Inject immediately after the clicked card
+    cardElement.after(detailDiv);
+    
+    // Slight smooth scroll to ensure it's in view
+    detailDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function changeQty(id, amount) {
-    const qtyInput = document.getElementById(`qty-${id}`);
-    let newVal = parseInt(qtyInput.value) + amount;
-    if (newVal >= 1) qtyInput.value = newVal;
+function changeQtyInline(amount, btnElement) {
+    const input = btnElement.parentElement.querySelector('.inline-qty');
+    let newVal = parseInt(input.value) + amount;
+    if (newVal >= 1) input.value = newVal;
 }
 
-function addToCart(id) {
-    const quantity = parseInt(document.getElementById(`qty-${id}`).value);
-    const product = storeProducts.find(p => p.id === id);
-    const existingItem = shoppingCart.find(item => item.id === id);
+function addInlineToCart(productId, btnElement) {
+    const quantity = parseInt(btnElement.parentElement.querySelector('.inline-qty').value);
+    const product = storeProducts.find(p => p.id === productId);
+    const existingItem = shoppingCart.find(item => item.id === productId);
     const activePrice = product.discountPrice ? product.discountPrice : product.price;
 
     if (existingItem) existingItem.quantity += quantity;
@@ -190,21 +190,94 @@ function addToCart(id) {
 
     updateCartBadge();
     
-    // Feedback animation
-    const btn = document.getElementById(`btn-${id}`);
-    const originalText = btn.innerHTML;
-    btn.innerHTML = 'Added! <i class="fas fa-check"></i>';
-    btn.style.background = '#4a6659';
-    setTimeout(() => { btn.innerHTML = originalText; btn.style.background = 'var(--accent)'; }, 1500);
+    const originalText = btnElement.innerHTML;
+    btnElement.innerHTML = 'Added! <i class="fas fa-check"></i>';
+    btnElement.style.background = '#00aa00';
+    setTimeout(() => { 
+        btnElement.innerHTML = originalText; 
+        btnElement.style.background = 'var(--accent)'; 
+        // Auto-close after adding
+        btnElement.closest('.inline-detail').remove();
+    }, 1200);
 }
 
-// === CART & CHECKOUT LOGIC ===
+// === REMAINDER OF UTILITY LOGIC ===
+function renderCarousel() {
+    const track = document.getElementById('model-track');
+    const container = document.getElementById('model-carousel-container');
+    if(carouselItems.length === 0) return;
+    container.style.display = 'block';
+    const loopItems = [...carouselItems, ...carouselItems]; 
+    loopItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'model-item';
+        div.onclick = () => filterFromCarousel(item.link);
+        div.innerHTML = `<img src="${item.imageUrl}" alt="Model" loading="lazy">`;
+        track.appendChild(div);
+    });
+}
+
+function filterFromCarousel(linkData) {
+    if (!linkData || linkData.trim() === "") return;
+    const searchTerms = linkData.split(',').map(term => term.trim().toLowerCase());
+    const filtered = storeProducts.filter(p => searchTerms.includes(p.id.toLowerCase()) || searchTerms.includes(p.category.toLowerCase()));
+    
+    document.getElementById('main-hero').style.display = 'none';
+    document.getElementById('home-extra-sections').style.display = 'none';
+    closeAllViews();
+    renderGrid(filtered, mainGrid);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleSearch() {
+    const searchBar = document.getElementById('search-bar');
+    const searchInput = document.getElementById('search-input');
+    if(searchBar.style.display === 'flex') {
+        searchBar.style.display = 'none';
+        searchInput.value = '';
+        document.getElementById('main-hero').style.display = 'block';
+        document.getElementById('home-extra-sections').style.display = 'block';
+        filterProducts('All');
+    } else {
+        searchBar.style.display = 'flex';
+        searchInput.focus();
+        window.scrollTo(0, 0);
+    }
+}
+
+function searchProducts() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+    document.getElementById('main-hero').style.display = 'none';
+    document.getElementById('home-extra-sections').style.display = 'none';
+    const filtered = storeProducts.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
+    
+    if(catalogView.style.display === 'none') {
+        closeAllViews(); 
+        document.getElementById('main-hero').style.display = 'none';
+        document.getElementById('home-extra-sections').style.display = 'none';
+    }
+    renderGrid(filtered, mainGrid);
+}
+
+function filterProducts(category) {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('main-hero').style.display = 'block';
+    document.getElementById('home-extra-sections').style.display = 'block';
+    renderGrid(category === 'All' ? storeProducts : storeProducts.filter(p => p.category === category), mainGrid);
+}
+
+function closeAllViews() {
+    cartView.style.display = 'none';
+    catalogView.style.display = 'block';
+    document.getElementById('main-hero').style.display = 'block';
+    document.getElementById('home-extra-sections').style.display = 'block';
+    window.scrollTo(0, 0);
+}
+
 function updateCartBadge() {
     const badge = document.getElementById('cart-count-badge');
     badge.innerText = shoppingCart.reduce((sum, item) => sum + item.quantity, 0);
-    badge.classList.remove('bump');
-    void badge.offsetWidth; 
-    badge.classList.add('bump');
 }
 
 function openCart() {
@@ -212,11 +285,6 @@ function openCart() {
     catalogView.style.display = 'none';
     cartView.style.display = 'block';
     window.scrollTo(0, 0);
-}
-
-function closeCart() {
-    cartView.style.display = 'none';
-    catalogView.style.display = 'block';
 }
 
 function removeFromCart(productId) {
@@ -231,7 +299,7 @@ function renderCart() {
     container.innerHTML = '';
     
     if (shoppingCart.length === 0) {
-        container.innerHTML = '<p>Your cart is empty.</p>';
+        container.innerHTML = '<p style="color: #aaa;">Your cart is empty.</p>';
         totalDisplay.innerText = '$0.00';
         return;
     }
@@ -243,19 +311,19 @@ function renderCart() {
         container.innerHTML += `
             <div class="cart-item">
                 <div class="cart-item-info">
-                    <h4 style="font-family:'Outfit'; font-weight:500;">${item.name}</h4>
-                    <p style="color:var(--text-light); font-size:0.9rem;">Qty: ${item.quantity} x $${item.price.toFixed(2)}</p>
+                    <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: #fff;">${item.name}</h4>
+                    <p>Qty: ${item.quantity} x $${item.price.toFixed(2)}</p>
                     <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
                 </div>
-                <div class="cart-item-price"><strong>$${itemTotal.toFixed(2)}</strong></div>
+                <div class="cart-item-price">
+                    <strong style="color: #fff;">$${itemTotal.toFixed(2)}</strong>
+                </div>
             </div>`;
     });
     totalDisplay.innerText = `$${grandTotal.toFixed(2)}`;
 }
 
-// Check if user is on mobile for fallback routing
-const isMobileUser = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
+// === BULLETPROOF DESKTOP CHECKOUT (UNTOUCHED) ===
 function processCheckout(platform) {
     if (shoppingCart.length === 0) return alert("Your cart is empty!");
 
@@ -265,7 +333,7 @@ function processCheckout(platform) {
 
     if (!name || !phone || !address) return alert("Please fill out all delivery details.");
 
-    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#2C302E', '#9A8C73', '#F9F8F6'] });
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff4444', '#ffffff', '#000000'] });
 
     const now = new Date();
     const yy = now.getFullYear().toString().slice(-2);
@@ -274,88 +342,46 @@ function processCheckout(platform) {
     const hh = now.getHours().toString().padStart(2, '0');
     const mins = now.getMinutes().toString().padStart(2, '0');
     const ss = now.getSeconds().toString().padStart(2, '0');
+    
     const orderId = `ORD-${yy}${mm}${dd}-${hh}${mins}${ss}`; 
 
     let grandTotal = 0;
     let itemsText = "";
     
     shoppingCart.forEach(item => {
-        grandTotal += (item.price * item.quantity);
-        itemsText += `- ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toFixed(2)})\n`;
+        const itemTotal = item.price * item.quantity;
+        grandTotal += itemTotal;
+        itemsText += `- ${item.quantity}x ${item.name} ($${itemTotal.toFixed(2)})\n`;
     });
 
     const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}💰 TOTAL: $${grandTotal.toFixed(2)}\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}`;
     const encodedMessage = encodeURIComponent(orderMessage);
 
-    // Bulletproof Clipboard Safety Net
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     navigator.clipboard.writeText(orderMessage).then(() => {
-        if (!isMobileUser) alert("Order copied to clipboard! 📋\n\nPlease PASTE the message into the chat if it doesn't load fully.");
+        if (!isMobile) {
+            alert("Order copied to clipboard! 📋\n\nPlease PASTE the message into the chat if it doesn't load fully.");
+        }
         
         if (platform === 'telegram') {
-            window.open(isMobileUser ? `https://t.me/+${STORE_PHONE}?text=${encodedMessage}` : `tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, isMobileUser ? '_blank' : '_self');
+            if (isMobile) {
+                window.open(`https://t.me/+${STORE_PHONE}?text=${encodedMessage}`, '_blank');
+            } else {
+                window.open(`tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, '_self');
+            }
         } else if (platform === 'viber') {
-            window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, isMobileUser ? '_blank' : '_self');
+            if (isMobile) {
+                window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, '_blank');
+            } else {
+                window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, '_self');
+            }
         }
-    }).catch(() => {
+    }).catch(err => {
         if (platform === 'telegram') {
-             window.open(isMobileUser ? `https://t.me/+${STORE_PHONE}?text=${encodedMessage}` : `tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, isMobileUser ? '_blank' : '_self');
+             window.open(isMobile ? `https://t.me/+${STORE_PHONE}?text=${encodedMessage}` : `tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, isMobile ? '_blank' : '_self');
         } else if (platform === 'viber') {
-             window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, isMobileUser ? '_blank' : '_self');
+             window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, isMobile ? '_blank' : '_self');
         }
     });
-}
-
-// Carousel and Search logic remains standard
-function renderCarousel() {
-    const track = document.getElementById('model-track');
-    const container = document.getElementById('model-carousel-container');
-    if(carouselItems.length === 0) return;
-    container.style.display = 'block';
-    [...carouselItems, ...carouselItems].forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'model-item';
-        div.onclick = () => filterFromCarousel(item.link);
-        div.innerHTML = `<img src="${item.imageUrl}" loading="lazy">`;
-        track.appendChild(div);
-    });
-}
-
-function filterFromCarousel(linkData) {
-    if (!linkData || linkData.trim() === "") return;
-    const searchTerms = linkData.split(',').map(t => t.trim().toLowerCase());
-    const filtered = storeProducts.filter(p => searchTerms.includes(p.id.toLowerCase()) || searchTerms.includes(p.category.toLowerCase()));
-    
-    document.getElementById('main-hero').style.display = 'none';
-    document.getElementById('home-extra-sections').style.display = 'none';
-    closeCart();
-    renderGrid(filtered, mainGrid);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function toggleSearch() {
-    const s = document.getElementById('search-bar');
-    if(s.style.display === 'flex') {
-        s.style.display = 'none';
-        document.getElementById('search-input').value = '';
-        filterProducts('All');
-    } else {
-        s.style.display = 'flex';
-        document.getElementById('search-input').focus();
-        window.scrollTo(0, 0);
-    }
-}
-
-function searchProducts() {
-    const query = document.getElementById('search-input').value.toLowerCase();
-    document.getElementById('main-hero').style.display = 'none';
-    document.getElementById('home-extra-sections').style.display = 'none';
-    renderGrid(storeProducts.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)), mainGrid);
-}
-
-function filterProducts(category) {
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    document.getElementById('main-hero').style.display = 'block';
-    document.getElementById('home-extra-sections').style.display = 'block';
-    renderGrid(category === 'All' ? storeProducts : storeProducts.filter(p => p.category === category), mainGrid);
 }
