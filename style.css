@@ -56,26 +56,134 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
 .filter-btn.active { color: var(--text-main); font-weight: 500; border-bottom-color: var(--accent); }
 
 /* Grid System */
-.product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-@media (min-width: 768px) { .product-grid { grid-template-columns: repeat(4, 1fr); gap: 2rem; } }
+.product-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 1rem; 
+}
+@media (min-width: 768px) { 
+    .product-grid { grid-template-columns: repeat(4, 1fr); gap: 2rem; } 
+}
 
-.product-card { cursor: pointer; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; transition: var(--transition); position: relative; padding-bottom: 1rem; }
-.product-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.product-card { 
+    cursor: pointer; 
+    background: var(--card-bg); 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; 
+    transition: var(--transition); 
+    position: relative; 
+    padding-bottom: 1rem;
+    
+    /* NEW: Strict flexbox to ensure all cards stretch to identical heights */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden; /* Bulletproof fix to stop any image bleeding */
+}
+.product-card:hover { 
+    border-color: var(--accent); 
+    transform: translateY(-5px); 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
+}
 
-.img-container { background-color: #000; aspect-ratio: 3/4; overflow: hidden; border-radius: 8px 8px 0 0; position: relative; border-bottom: 1px solid var(--border-color); }
-.grid-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.7s ease; opacity: 0.9; }
-.product-card:hover .grid-img { transform: scale(1.08); opacity: 1; }
+.img-container { 
+    background-color: #000; 
+    width: 100%;
+    aspect-ratio: 3/4; 
+    position: relative; 
+    border-bottom: 1px solid var(--border-color); 
+    overflow: hidden; 
+    
+    /* NEW: Force iOS/Safari to respect the border-radius clipping */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    transform: translateZ(0);
+}
 
-.badge-container { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 2; }
-.product-badge { background: #000; border: 1px solid #444; color: white; font-size: 0.6rem; padding: 0.35rem 0.7rem; letter-spacing: 1px; text-transform: uppercase; width: max-content; }
-.badge-discount { color: var(--accent); border-color: var(--accent); } 
+.grid-img { 
+    /* NEW: Absolute positioning pins the image strictly to the container bounds */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    object-position: center; 
+    transition: transform 0.7s ease; 
+    opacity: 0.9; 
+}
+.product-card:hover .grid-img { 
+    transform: scale(1.08); 
+    opacity: 1; 
+}
 
-.product-info { padding: 1rem 0.5rem 0; text-align: center; }
-.product-brand { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 0.3rem; }
-.product-title { font-size: 0.95rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
-.product-price { font-weight: 500; font-size: 0.9rem; color: #ddd; }
-.old-price { text-decoration: line-through; color: #777; font-size: 0.8rem; margin-right: 5px; }
-.sale-price { color: var(--accent); }
+.badge-container { 
+    position: absolute; 
+    top: 10px; 
+    left: 10px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 5px; 
+    z-index: 2; 
+}
+.product-badge { 
+    background: #000; 
+    border: 1px solid #444; 
+    color: white; 
+    font-size: 0.6rem; 
+    padding: 0.35rem 0.7rem; 
+    letter-spacing: 1px; 
+    text-transform: uppercase; 
+    width: max-content; 
+}
+.badge-discount { 
+    color: var(--accent); 
+    border-color: var(--accent); 
+} 
+
+.product-info { 
+    /* NEW: Flex-grow forces the text area to expand, aligning bottoms nicely */
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 1rem 0.5rem 0; 
+    text-align: center; 
+}
+.product-brand { 
+    font-size: 0.6rem; 
+    text-transform: uppercase; 
+    letter-spacing: 2px; 
+    color: var(--text-muted); 
+    margin-bottom: 0.3rem; 
+}
+.product-title { 
+    font-size: 0.95rem; 
+    font-family: 'Cormorant Garamond', serif; 
+    font-weight: 600; 
+    margin-bottom: 0.4rem; 
+    
+    /* Keeps long titles from breaking the grid alignment */
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    color: var(--text-main); 
+}
+.product-price { 
+    /* Pushes the price to the bottom if the title area gets taller */
+    margin-top: auto; 
+    font-weight: 500; 
+    font-size: 0.9rem; 
+    color: #ddd; 
+}
+.old-price { 
+    text-decoration: line-through; 
+    color: #777; 
+    font-size: 0.8rem; 
+    margin-right: 5px; 
+}
+.sale-price { 
+    color: var(--accent); 
+}
+
 
 /* === NEW: INLINE EXPANSION DETAIL VIEW === */
 .inline-detail { 
