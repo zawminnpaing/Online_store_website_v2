@@ -119,7 +119,7 @@ function renderGrid(productsArray, container) {
     });
 }
 
-// === COMPACT SIDE-BY-SIDE INLINE EXPANSION VIEW ===
+// === NEW: HORIZONTAL INLINE REVEAL LOGIC ===
 function openProductInline(productId, cardElement) {
     document.querySelectorAll('.inline-detail').forEach(el => el.remove());
 
@@ -136,8 +136,11 @@ function openProductInline(productId, cardElement) {
     const detailDiv = document.createElement('div');
     detailDiv.className = 'inline-detail';
     
-    // Adjusted fonts heavily for the tight side-by-side mobile layout
+    // Completely restructured for a tight, side-by-side layout
     detailDiv.innerHTML = `
+        <button class="close-inline-btn" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
         <div class="inline-gallery">
             <img src="${product.images[0]}" class="main-inline-img" id="main-img-${product.id}" alt="${product.name}">
             <div class="inline-thumbnails">
@@ -145,16 +148,9 @@ function openProductInline(productId, cardElement) {
             </div>
         </div>
         <div class="inline-info-wrapper">
-            <div>
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; margin: 0 0 0.1rem 0; color: #fff; line-height: 1.1;">${product.name}</h2>
-                    <button class="close-inline-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
-                <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite.'}</p>
-            </div>
+            <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; margin: 0 0 0.1rem 0; color: #fff; line-height: 1.2;">${product.name}</h2>
+            <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
+            <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite.'}</p>
             
             <div class="inline-controls">
                 <div class="qty-selector">
@@ -163,7 +159,7 @@ function openProductInline(productId, cardElement) {
                     <button onclick="changeQtyInline(1, this)">+</button>
                 </div>
                 <button class="add-to-cart-btn" onclick="addInlineToCart('${product.id}', this)">
-                    Add <i class="fas fa-shopping-bag"></i>
+                    ADD <i class="fas fa-shopping-bag"></i>
                 </button>
             </div>
         </div>
