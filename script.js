@@ -119,8 +119,9 @@ function renderGrid(productsArray, container) {
     });
 }
 
-// === NEW: HORIZONTAL INLINE REVEAL LOGIC ===
+// === SMART ROW INLINE REVEAL ===
 function openProductInline(productId, cardElement) {
+    // 1. Remove existing reveals so we start fresh
     document.querySelectorAll('.inline-detail').forEach(el => el.remove());
 
     const product = storeProducts.find(p => p.id === productId.toString());
@@ -136,7 +137,6 @@ function openProductInline(productId, cardElement) {
     const detailDiv = document.createElement('div');
     detailDiv.className = 'inline-detail';
     
-    // Completely restructured for a tight, side-by-side layout
     detailDiv.innerHTML = `
         <button class="close-inline-btn" onclick="this.parentElement.remove()">
             <i class="fas fa-times"></i>
@@ -148,9 +148,9 @@ function openProductInline(productId, cardElement) {
             </div>
         </div>
         <div class="inline-info-wrapper">
-            <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; margin: 0 0 0.1rem 0; color: #fff; line-height: 1.2;">${product.name}</h2>
-            <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
-            <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite.'}</p>
+            <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; margin: 0 0 0.2rem 0; color: #fff; line-height: 1.2;">${product.name}</h2>
+            <p style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
+            <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite. Crafted with excellence for the modern aesthetic.'}</p>
             
             <div class="inline-controls">
                 <div class="qty-selector">
@@ -165,7 +165,21 @@ function openProductInline(productId, cardElement) {
         </div>
     `;
 
-    cardElement.after(detailDiv);
+    // 2. The Smart Row Logic: Find the exact end of the current row
+    const parentGrid = cardElement.parentElement;
+    const allCards = Array.from(parentGrid.children).filter(c => c.classList.contains('product-card'));
+    const index = allCards.indexOf(cardElement);
+    
+    // Desktop shows 4, Mobile shows 2
+    const cardsPerRow = window.innerWidth >= 768 ? 4 : 2; 
+    
+    // Calculate the last item in this specific row
+    const insertAfterIndex = Math.min(index + (cardsPerRow - 1 - (index % cardsPerRow)), allCards.length - 1);
+
+    // Insert the reveal *after* the last card in the row so it doesn't break the layout
+    allCards[insertAfterIndex].after(detailDiv);
+    
+    // Smooth scroll so the reveal sits nicely in the middle of the screen
     detailDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
