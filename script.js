@@ -119,7 +119,7 @@ function renderGrid(productsArray, container) {
     });
 }
 
-// === NEW: GALLERY INLINE EXPANSION VIEW ===
+// === COMPACT INLINE EXPANSION VIEW ===
 function openProductInline(productId, cardElement) {
     document.querySelectorAll('.inline-detail').forEach(el => el.remove());
 
@@ -128,15 +128,15 @@ function openProductInline(productId, cardElement) {
 
     const activePrice = product.discountPrice ? product.discountPrice : product.price;
 
-    // Generate thumbnails for the gallery
     let thumbnailsHTML = '';
     product.images.forEach(imgUrl => {
-        // We use onclick to swap the src of the main image
         thumbnailsHTML += `<img src="${imgUrl}" onclick="document.getElementById('main-img-${product.id}').src='${imgUrl}'" alt="${product.name} thumbnail">`;
     });
 
     const detailDiv = document.createElement('div');
     detailDiv.className = 'inline-detail';
+    
+    // Notice the reduced font sizes and margins in the h2 and p tags below
     detailDiv.innerHTML = `
         <div class="inline-gallery">
             <img src="${product.images[0]}" class="main-inline-img" id="main-img-${product.id}" alt="${product.name}">
@@ -147,13 +147,13 @@ function openProductInline(productId, cardElement) {
         <div class="inline-info-wrapper">
             <div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; margin: 0 0 0.5rem 0; color: #fff;">${product.name}</h2>
+                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; margin: 0 0 0.2rem 0; color: #fff;">${product.name}</h2>
                     <button class="close-inline-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <p style="font-size: 1.3rem; font-weight: 500; margin-bottom: 1rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
-                <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite. Crafted with excellence for the modern aesthetic.'}</p>
+                <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
+                <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite.'}</p>
             </div>
             
             <div class="inline-controls">
@@ -322,7 +322,7 @@ function renderCart() {
     totalDisplay.innerText = `$${grandTotal.toFixed(2)}`;
 }
 
-// === CHECKOUT: FIXED MOBILE vs DESKTOP LOGIC ===
+// === CHECKOUT LOGIC ===
 function processCheckout(platform) {
     if (shoppingCart.length === 0) return alert("Your cart is empty!");
 
@@ -358,7 +358,6 @@ function processCheckout(platform) {
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    // FIXED: Mobile phones bypass the clipboard completely so they don't get blocked by popup security rules.
     if (isMobile) {
         if (platform === 'telegram') {
             window.open(`https://t.me/+${STORE_PHONE}?text=${encodedMessage}`, '_blank');
@@ -366,7 +365,6 @@ function processCheckout(platform) {
             window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, '_blank');
         }
     } else {
-        // Desktop computers use the clipboard trick to avoid truncation limits
         navigator.clipboard.writeText(orderMessage).then(() => {
             alert("Order copied to clipboard! 📋\n\nPlease PASTE the message into the chat if it doesn't load fully.");
             
@@ -376,7 +374,6 @@ function processCheckout(platform) {
                 window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, '_self');
             }
         }).catch(err => {
-            // Backup
             if (platform === 'telegram') {
                 window.open(`tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, '_self');
             } else if (platform === 'viber') {
