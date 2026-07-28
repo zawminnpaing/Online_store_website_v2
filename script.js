@@ -91,7 +91,6 @@ function renderGrid(productsArray, container) {
     productsArray.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
-        // Pass the card element itself to inject the details right after it
         card.onclick = (e) => openProductInline(product.id, e.currentTarget);
         
         let badgesHTML = '<div class="badge-container">';
@@ -120,37 +119,41 @@ function renderGrid(productsArray, container) {
     });
 }
 
-// === NEW: INLINE EXPANSION LOGIC ===
+// === NEW: GALLERY INLINE EXPANSION VIEW ===
 function openProductInline(productId, cardElement) {
-    // 1. Remove any currently open inline details
     document.querySelectorAll('.inline-detail').forEach(el => el.remove());
 
     const product = storeProducts.find(p => p.id === productId.toString());
     if (!product) return;
 
-    // 2. Generate Image HTML dynamically
-    let imagesHTML = '';
-    product.images.forEach(imgUrl => {
-        imagesHTML += `<img src="${imgUrl}" alt="${product.name}">`;
-    });
-
     const activePrice = product.discountPrice ? product.discountPrice : product.price;
 
-    // 3. Create the inline container
+    // Generate thumbnails for the gallery
+    let thumbnailsHTML = '';
+    product.images.forEach(imgUrl => {
+        // We use onclick to swap the src of the main image
+        thumbnailsHTML += `<img src="${imgUrl}" onclick="document.getElementById('main-img-${product.id}').src='${imgUrl}'" alt="${product.name} thumbnail">`;
+    });
+
     const detailDiv = document.createElement('div');
     detailDiv.className = 'inline-detail';
     detailDiv.innerHTML = `
-        <div class="inline-images-wrapper">
-            ${imagesHTML}
+        <div class="inline-gallery">
+            <img src="${product.images[0]}" class="main-inline-img" id="main-img-${product.id}" alt="${product.name}">
+            <div class="inline-thumbnails">
+                ${thumbnailsHTML}
+            </div>
         </div>
         <div class="inline-info-wrapper">
             <div>
-                <button class="close-inline-btn" onclick="this.parentElement.parentElement.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                </button>
-                <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; margin: 0.5rem 0;">${product.name}</h2>
-                <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite.'}</p>
-                <p style="font-size: 1.2rem; font-weight: 500; margin-bottom: 1rem; color: #fff;">$${activePrice.toFixed(2)}</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; margin: 0 0 0.5rem 0; color: #fff;">${product.name}</h2>
+                    <button class="close-inline-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <p style="font-size: 1.3rem; font-weight: 500; margin-bottom: 1rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
+                <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite. Crafted with excellence for the modern aesthetic.'}</p>
             </div>
             
             <div class="inline-controls">
@@ -166,11 +169,8 @@ function openProductInline(productId, cardElement) {
         </div>
     `;
 
-    // 4. Inject immediately after the clicked card
     cardElement.after(detailDiv);
-    
-    // Slight smooth scroll to ensure it's in view
-    detailDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    detailDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function changeQtyInline(amount, btnElement) {
@@ -196,12 +196,11 @@ function addInlineToCart(productId, btnElement) {
     setTimeout(() => { 
         btnElement.innerHTML = originalText; 
         btnElement.style.background = 'var(--accent)'; 
-        // Auto-close after adding
         btnElement.closest('.inline-detail').remove();
-    }, 1200);
+    }, 1000);
 }
 
-// === REMAINDER OF UTILITY LOGIC ===
+// === UTILITY LOGIC ===
 function renderCarousel() {
     const track = document.getElementById('model-track');
     const container = document.getElementById('model-carousel-container');
@@ -323,7 +322,7 @@ function renderCart() {
     totalDisplay.innerText = `$${grandTotal.toFixed(2)}`;
 }
 
-// === BULLETPROOF DESKTOP CHECKOUT (UNTOUCHED) ===
+// === CHECKOUT: FIXED MOBILE vs DESKTOP LOGIC ===
 function processCheckout(platform) {
     if (shoppingCart.length === 0) return alert("Your cart is empty!");
 
@@ -359,29 +358,30 @@ function processCheckout(platform) {
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    navigator.clipboard.writeText(orderMessage).then(() => {
-        if (!isMobile) {
-            alert("Order copied to clipboard! 📋\n\nPlease PASTE the message into the chat if it doesn't load fully.");
-        }
-        
+    // FIXED: Mobile phones bypass the clipboard completely so they don't get blocked by popup security rules.
+    if (isMobile) {
         if (platform === 'telegram') {
-            if (isMobile) {
-                window.open(`https://t.me/+${STORE_PHONE}?text=${encodedMessage}`, '_blank');
-            } else {
-                window.open(`tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, '_self');
-            }
+            window.open(`https://t.me/+${STORE_PHONE}?text=${encodedMessage}`, '_blank');
         } else if (platform === 'viber') {
-            if (isMobile) {
-                window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, '_blank');
-            } else {
+            window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, '_blank');
+        }
+    } else {
+        // Desktop computers use the clipboard trick to avoid truncation limits
+        navigator.clipboard.writeText(orderMessage).then(() => {
+            alert("Order copied to clipboard! 📋\n\nPlease PASTE the message into the chat if it doesn't load fully.");
+            
+            if (platform === 'telegram') {
+                window.open(`tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, '_self');
+            } else if (platform === 'viber') {
                 window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, '_self');
             }
-        }
-    }).catch(err => {
-        if (platform === 'telegram') {
-             window.open(isMobile ? `https://t.me/+${STORE_PHONE}?text=${encodedMessage}` : `tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, isMobile ? '_blank' : '_self');
-        } else if (platform === 'viber') {
-             window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, isMobile ? '_blank' : '_self');
-        }
-    });
+        }).catch(err => {
+            // Backup
+            if (platform === 'telegram') {
+                window.open(`tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, '_self');
+            } else if (platform === 'viber') {
+                window.open(`viber://chat?number=%2B${STORE_PHONE}&draft=${encodedMessage}`, '_self');
+            }
+        });
+    }
 }
