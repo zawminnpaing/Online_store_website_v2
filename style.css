@@ -95,7 +95,7 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
     border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem; display: inline-block; width: 100%;
 }
 
-/* === INLINE REVEAL WITH ZOOM MAGNIFIER === */
+/* === INLINE REVEAL WITH JAVASCRIPT-POWERED ZOOM MAGNIFIER === */
 .inline-detail { 
     grid-column: 1 / -1; 
     background: rgba(10, 10, 10, 0.95); 
@@ -121,7 +121,6 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
     flex-shrink: 0;
 }
 
-/* NEW: The container that clips the zoomed image so it doesn't bleed */
 .inline-main-img-container {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -130,23 +129,16 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
     background: #000;
     overflow: hidden; 
     position: relative;
-    cursor: zoom-in;
+    cursor: crosshair; 
 }
 
-/* NEW: The image that scales up and tracks the mouse */
 .main-inline-img { 
+    display: block; /* Forces image to respect sizing exactly */
     width: 100%; 
     height: 100%; 
     object-fit: cover; 
-    transition: transform 0.1s ease-out; /* Super smooth tracking */
+    transition: transform 0.15s ease-out; /* Smooth JS tracking transition */
     transform-origin: center center;
-}
-
-/* Only enable hover zoom on devices with a physical mouse */
-@media (hover: hover) {
-    .inline-main-img-container:hover .main-inline-img {
-        transform: scale(2.5); /* 2.5x magnification */
-    }
 }
 
 .inline-thumbnails { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
