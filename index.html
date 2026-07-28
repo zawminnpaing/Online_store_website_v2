@@ -4,16 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>Luxe | Editorial Catalog</title>
-    <meta name="description" content="Elevate your everyday style with our latest high-end collection.">
-    <meta property="og:title" content="Luxe Fashion Store">
-    <meta property="og:type" content="website">
-
-    <!-- New Editorial Fonts: Cormorant Garamond & Outfit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Luxe | Elite Catalog</title>
+    <meta name="description" content="Exclusive high-end collection.">
     
+    <!-- New Elegant Fonts: Cormorant Garamond (Headings) & Montserrat (Body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -22,7 +17,7 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo" onclick="closeCart()">LUXE.</div>
+            <div class="logo" onclick="closeAllViews()">LUXE.</div>
             <div class="nav-icons">
                 <i class="fas fa-search" onclick="toggleSearch()"></i>
                 <div class="cart-icon-wrapper" onclick="openCart()">
@@ -34,7 +29,7 @@
     </nav>
 
     <div class="search-bar-container" id="search-bar" style="display: none;">
-        <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for products...">
+        <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for products, categories...">
         <i class="fas fa-times" onclick="toggleSearch()"></i>
     </div>
 
@@ -42,8 +37,8 @@
     <div id="catalog-view">
         <header class="hero" id="main-hero">
             <div class="hero-content">
-                <h1>The Earth Collection</h1>
-                <p>Curated essentials for the modern wardrobe.</p>
+                <h1>The Elite Collection</h1>
+                <p>Dark, elegant, and unapologetic.</p>
             </div>
         </header>
         
@@ -56,7 +51,6 @@
                 <button class="filter-btn" onclick="filterProducts('Accessories')">Accessories</button>
             </div>
             
-            <!-- Products inject here (Inline Expansion enabled) -->
             <div class="product-grid" id="product-grid"></div>
 
             <div id="home-extra-sections">
@@ -70,13 +64,29 @@
                 </div>
             </div>
         </main>
+
+        <!-- Infinite Image Carousel -->
+        <div class="model-carousel" id="model-carousel-container">
+            <div class="model-track" id="model-track"></div>
+        </div>
+
+        <!-- NEW: Partner Logos Section -->
+        <section class="partner-logos-section">
+            <p class="partner-title">IN PARTNERSHIP WITH</p>
+            <div class="partner-track">
+                <span>LOUIS VUITTON</span>
+                <span>ZARA</span>
+                <span>GUCCI</span>
+                <span>PRADA</span>
+                <span>CHANEL</span>
+            </div>
+        </section>
     </div>
 
     <!-- === CART & CHECKOUT VIEW === -->
-    <!-- Kept separate because checkout requires focus -->
     <div id="cart-view" style="display: none;">
         <main class="detail-container">
-            <button class="back-btn" onclick="closeCart()">
+            <button class="back-btn" onclick="closeAllViews()">
                 <i class="fas fa-arrow-left"></i> Continue Shopping
             </button>
 
@@ -108,17 +118,27 @@
         </main>
     </div>
 
-    <!-- Infinite Image Carousel -->
-    <div class="model-carousel" id="model-carousel-container">
-        <div class="model-track" id="model-track"></div>
-    </div>
-
     <footer class="store-footer">
         <div class="footer-grid">
             <div class="footer-brand">
                 <h2>LUXE.</h2>
                 <p>Curated fashion for the modern aesthetic.</p>
             </div>
+            <div class="footer-links">
+                <h3>Customer Care</h3>
+                <a href="#">Contact Us</a>
+                <a href="#">Shipping & Returns</a>
+            </div>
+            <div class="footer-social">
+                <h3>Follow Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Luxe Elite. All rights reserved.</p>
         </div>
     </footer>
 
