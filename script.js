@@ -119,9 +119,7 @@ function renderGrid(productsArray, container) {
     });
 }
 
-// === SMART ROW INLINE REVEAL ===
 function openProductInline(productId, cardElement) {
-    // 1. Remove existing reveals so we start fresh
     document.querySelectorAll('.inline-detail').forEach(el => el.remove());
 
     const product = storeProducts.find(p => p.id === productId.toString());
@@ -137,12 +135,15 @@ function openProductInline(productId, cardElement) {
     const detailDiv = document.createElement('div');
     detailDiv.className = 'inline-detail';
     
+    // Notice the new onmousemove and onmouseleave events added to the image container
     detailDiv.innerHTML = `
         <button class="close-inline-btn" onclick="this.parentElement.remove()">
             <i class="fas fa-times"></i>
         </button>
         <div class="inline-gallery">
-            <img src="${product.images[0]}" class="main-inline-img" id="main-img-${product.id}" alt="${product.name}">
+            <div class="inline-main-img-container" onmousemove="zoomImage(event, this)" onmouseleave="resetZoom(this)">
+                <img src="${product.images[0]}" class="main-inline-img" id="main-img-${product.id}" alt="${product.name}">
+            </div>
             <div class="inline-thumbnails">
                 ${thumbnailsHTML}
             </div>
@@ -165,22 +166,37 @@ function openProductInline(productId, cardElement) {
         </div>
     `;
 
-    // 2. The Smart Row Logic: Find the exact end of the current row
     const parentGrid = cardElement.parentElement;
     const allCards = Array.from(parentGrid.children).filter(c => c.classList.contains('product-card'));
     const index = allCards.indexOf(cardElement);
-    
-    // Desktop shows 4, Mobile shows 2
     const cardsPerRow = window.innerWidth >= 768 ? 4 : 2; 
-    
-    // Calculate the last item in this specific row
     const insertAfterIndex = Math.min(index + (cardsPerRow - 1 - (index % cardsPerRow)), allCards.length - 1);
 
-    // Insert the reveal *after* the last card in the row so it doesn't break the layout
     allCards[insertAfterIndex].after(detailDiv);
-    
-    // Smooth scroll so the reveal sits nicely in the middle of the screen
     detailDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// === NEW ZOOM MAGNIFIER LOGIC ===
+function zoomImage(e, container) {
+    const img = container.querySelector('.main-inline-img');
+    const rect = container.getBoundingClientRect();
+    
+    // Find exact mouse position inside the box
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Convert to percentages
+    const xPercent = (x / rect.width) * 100;
+    const yPercent = (y / rect.height) * 100;
+    
+    // Move the image's anchor point to wherever the mouse is
+    img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+}
+
+function resetZoom(container) {
+    const img = container.querySelector('.main-inline-img');
+    // Snap back to the center when the mouse leaves
+    img.style.transformOrigin = 'center center';
 }
 
 function changeQtyInline(amount, btnElement) {
@@ -210,7 +226,6 @@ function addInlineToCart(productId, btnElement) {
     }, 1000);
 }
 
-// === UTILITY LOGIC ===
 function renderCarousel() {
     const track = document.getElementById('model-track');
     const container = document.getElementById('model-carousel-container');
