@@ -119,7 +119,7 @@ function renderGrid(productsArray, container) {
     });
 }
 
-// === COMPACT INLINE EXPANSION VIEW ===
+// === COMPACT SIDE-BY-SIDE INLINE EXPANSION VIEW ===
 function openProductInline(productId, cardElement) {
     document.querySelectorAll('.inline-detail').forEach(el => el.remove());
 
@@ -136,7 +136,7 @@ function openProductInline(productId, cardElement) {
     const detailDiv = document.createElement('div');
     detailDiv.className = 'inline-detail';
     
-    // Notice the reduced font sizes and margins in the h2 and p tags below
+    // Adjusted fonts heavily for the tight side-by-side mobile layout
     detailDiv.innerHTML = `
         <div class="inline-gallery">
             <img src="${product.images[0]}" class="main-inline-img" id="main-img-${product.id}" alt="${product.name}">
@@ -147,12 +147,12 @@ function openProductInline(productId, cardElement) {
         <div class="inline-info-wrapper">
             <div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; margin: 0 0 0.2rem 0; color: #fff;">${product.name}</h2>
+                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; margin: 0 0 0.1rem 0; color: #fff; line-height: 1.1;">${product.name}</h2>
                     <button class="close-inline-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
+                <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--accent);">$${activePrice.toFixed(2)}</p>
                 <p class="inline-desc">${product.description || 'Premium selection from Luxe Elite.'}</p>
             </div>
             
@@ -163,7 +163,7 @@ function openProductInline(productId, cardElement) {
                     <button onclick="changeQtyInline(1, this)">+</button>
                 </div>
                 <button class="add-to-cart-btn" onclick="addInlineToCart('${product.id}', this)">
-                    Add to Cart <i class="fas fa-shopping-bag"></i>
+                    Add <i class="fas fa-shopping-bag"></i>
                 </button>
             </div>
         </div>
@@ -191,7 +191,7 @@ function addInlineToCart(productId, btnElement) {
     updateCartBadge();
     
     const originalText = btnElement.innerHTML;
-    btnElement.innerHTML = 'Added! <i class="fas fa-check"></i>';
+    btnElement.innerHTML = '<i class="fas fa-check"></i>';
     btnElement.style.background = '#00aa00';
     setTimeout(() => { 
         btnElement.innerHTML = originalText; 
