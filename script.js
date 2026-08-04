@@ -340,6 +340,30 @@ function previewReceipt(event) {
     }
 }
 
+// === NEW: Copy Phone Number Function ===
+function copyPhoneNumber(btnElement) {
+    const phoneElement = document.getElementById('kbz-phone');
+    if (!phoneElement) return;
+    
+    // Grabs text and removes spaces so it pastes perfectly into the KBZPay app
+    const phoneText = phoneElement.innerText.replace(/\s+/g, '');
+    
+    navigator.clipboard.writeText(phoneText).then(() => {
+        const originalHTML = btnElement.innerHTML;
+        btnElement.innerHTML = '<i class="fas fa-check"></i>';
+        btnElement.classList.add('copied');
+        
+        // Revert back to copy icon after 2 seconds
+        setTimeout(() => {
+            btnElement.innerHTML = originalHTML;
+            btnElement.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert("Failed to copy phone number.");
+    });
+}
+
 function renderCart() {
     const container = document.getElementById('cart-items-container');
     const totalDisplay = document.getElementById('cart-total-price');
@@ -424,7 +448,7 @@ function processCheckout(platform) {
 
     const deposit = grandTotal / 2;
 
-    const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}\n💰 TOTAL: $${grandTotal.toFixed(2)}\n💸 DEPOSIT PAID: $${deposit.toFixed(2)} (KBZPay)\n🔢 TRX LAST 5 DIGITS: ${trx}\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n[ကျွန်တော် ငွေလွှဲပြေစာပုံကို အောက်တွင် ထပ်တွဲပေးပါမည်။]`;
+    const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}\n💰 TOTAL: $${grandTotal.toFixed(2)}\n💸 DEPOSIT PAID: $${deposit.toFixed(2)} (KBZPay)\n🔢 TRX LAST 5 DIGITS: ${trx}\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n[ကျွန်တော် ငွေလွှပြေစာပုံကို အောက်တွင် ထပ်တွဲပေးပါမည်။]]`;
 
     const encodedMessage = encodeURIComponent(orderMessage);
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
