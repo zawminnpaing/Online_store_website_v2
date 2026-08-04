@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <title>Luxe | Elite Catalog</title>
     <meta name="description" content="Exclusive high-end collection.">
-    
+
     <!-- Elegant Fonts: Cormorant Garamond (Headings) & Montserrat (Body) -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -41,7 +41,7 @@
                 <p>Dark, elegant, and unapologetic.</p>
             </div>
         </header>
-        
+
         <main class="store-container">
             <div class="filter-bar" id="filter-bar">
                 <button class="filter-btn active" onclick="filterProducts('All')">All</button>
@@ -50,7 +50,7 @@
                 <button class="filter-btn" onclick="filterProducts('Bottoms')">Bottoms</button>
                 <button class="filter-btn" onclick="filterProducts('Accessories')">Accessories</button>
             </div>
-            
+
             <div class="product-grid" id="product-grid"></div>
 
             <div id="home-extra-sections">
@@ -103,25 +103,63 @@
                 <div class="checkout-section">
                     <h2>Checkout Details</h2>
                     <form id="checkout-form">
-                        <div class="form-group"><label>Full Name</label><input type="text" id="cust-name" required></div>
-                        <div class="form-group"><label>Contact Number</label><input type="tel" id="cust-phone" required></div>
-                        <div class="form-group"><label>Delivery Location</label><textarea id="cust-address" rows="3" required></textarea></div>
-<div class="payment-section">
-    <h3 class="payment-title">KBZPay Deposit (50%)</h3>
-    <p class="payment-instructions">To secure your order, please transfer exactly <strong id="deposit-amount" class="highlight-amount">$0.00</strong> to the account below:</p>
-    
-    <div class="kbz-account-card">
-        <p><strong>09 793155856</strong></p>
-        <p>U Zaw Minn Paing</p>
-    </div>
+                        <div class="form-group">
+                            <label for="cust-name">Name / အမည် *</label>
+                            <input type="text" id="cust-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cust-phone">Phone Number / ဖုန်းနံပါတ် *</label>
+                            <input type="tel" id="cust-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cust-address">Delivery Address / ပို့ဆောင်ရမည့်လိပ်စာ *</label>
+                            <textarea id="cust-address" rows="3" required></textarea>
+                        </div>
 
-    <div class="form-group">
-        <label for="kbz-receipt">Upload Transaction Screenshot (Required) *</label>
-        <input type="file" id="kbz-receipt" accept="image/*" required>
-        <small style="color: #aaa; font-size: 0.7rem; display: block; margin-top: 5px;">You will also need to attach this image in the chat.</small>
-    </div>
-</div>
+                        <!-- KBZPay Section -->
+                        <div class="payment-section">
+                            <h3 class="payment-title" style="margin-bottom: 10px;">
+                                KBZPay Deposit (50%)<br>
+                                <span style="font-size: 1rem; color: var(--accent);">KBZPay ဖြင့် ငွေ ၅၀% ကြိုတင်ပေးချေရန်</span>
+                            </h3>
+                            <p class="payment-instructions">
+                                To secure your order, please transfer exactly <strong id="deposit-amount" class="highlight-amount">$0.00</strong> to the account below:<br>
+                                <span style="font-size: 0.8rem; color: #bbb;">အော်ဒါတင်ခြင်းကို အတည်ပြုရန်အတွက် အောက်ပါအကောင့်သို့ ငွေတိတိကျကျ လွှဲပြောင်းပေးပါ -</span>
+                            </p>
+                            
+                            <div class="kbz-account-card">
+                                <p><strong>09 793155856</strong></p>
+                                <p>U Zaw Minn Paing</p>
+                            </div>
 
+                            <!-- Image Upload & Preview -->
+                            <div class="form-group" style="text-align: left;">
+                                <label for="kbz-receipt">
+                                    Upload Transaction Screenshot *<br>
+                                    <span style="font-size: 0.75rem; color: #aaa;">ငွေလွှဲပြေစာ ဓာတ်ပုံထည့်သွင်းရန် (မဖြစ်မနေ)</span>
+                                </label>
+                                <input type="file" id="kbz-receipt" accept="image/*" required onchange="previewReceipt(event)">
+                                
+                                <!-- Image Preview Container -->
+                                <div id="receipt-preview-container" style="display: none; margin-top: 10px; text-align: center;">
+                                    <img id="receipt-preview" src="" alt="Receipt Preview" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                                </div>
+                                
+                                <small style="color: #ff758c; font-size: 0.75rem; display: block; margin-top: 5px;">
+                                    * You will also need to attach this image in the chat.<br>
+                                    (ဤဓာတ်ပုံကို Chat ထဲတွင်လည်း ပေးပို့ရမည်ဖြစ်ပါသည်။)
+                                </small>
+                            </div>
+
+                            <!-- 5-Digit Transaction ID -->
+                            <div class="form-group" style="text-align: left; margin-top: 1rem;">
+                                <label for="kbz-trx">
+                                    Last 5 Digits of Transaction ID *<br>
+                                    <span style="font-size: 0.75rem; color: #aaa;">လုပ်ငန်းစဉ်အမှတ် (Transaction ID) ၏ နောက်ဆုံးဂဏန်း ၅ လုံး</span>
+                                </label>
+                                <input type="text" id="kbz-trx" maxlength="5" placeholder="e.g. 12345" required>
+                            </div>
+                        </div>
                     </form>
 
                     <div class="checkout-actions">
