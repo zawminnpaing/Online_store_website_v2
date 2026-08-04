@@ -216,3 +216,52 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
 .footer-links a:hover, .social-icons a:hover { color: #fff; }
 .social-icons { display: flex; gap: 1rem; }
 .footer-bottom { text-align: center; padding-top: 1.5rem; color: #999; font-size: 0.7rem; }
+/* KBZPay Payment Section */
+.payment-section {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px dashed var(--accent);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    text-align: center;
+}
+.payment-title {
+    font-family: 'Cormorant Garamond', serif;
+    color: #fff;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+.payment-instructions {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+.highlight-amount {
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+.kbz-account-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+}
+.kbz-account-card p {
+    color: #fff;
+    font-size: 1rem;
+    margin: 0;
+}
+input[type="file"] {
+    background: rgba(0,0,0,0.4);
+    padding: 0.5rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: #fff;
+    width: 100%;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
