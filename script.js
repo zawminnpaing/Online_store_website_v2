@@ -424,7 +424,7 @@ function processCheckout(platform) {
 
     const deposit = grandTotal / 2;
 
-    const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}\n💰 TOTAL: $${grandTotal.toFixed(2)}\n💸 DEPOSIT PAID: $${deposit.toFixed(2)} (KBZPay)\n🔢 TRX LAST 5 DIGITS: ${trx}\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n[CUSTOMER WILL ATTACH SCREENSHOT TO THIS CHAT]`;
+    const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}\n💰 TOTAL: $${grandTotal.toFixed(2)}\n💸 DEPOSIT PAID: $${deposit.toFixed(2)} (KBZPay)\n🔢 TRX LAST 5 DIGITS: ${trx}\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n"ကျွန်တော် ငွေလွှဲပြေစာပုံကို အောက်တွင် ထပ်တွဲပေးပါမည်။"`;
 
     const encodedMessage = encodeURIComponent(orderMessage);
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
