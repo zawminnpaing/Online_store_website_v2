@@ -255,6 +255,39 @@ h1, h2, h3, .logo { font-family: 'Cormorant Garamond', serif; }
     font-size: 1rem;
     margin: 0;
 }
+
+/* NEW: Styles for the phone copy button */
+.kbz-phone-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+.copy-phone-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-main);
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.copy-phone-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+.copy-phone-btn.copied {
+    background: #00aa00;
+    border-color: #00aa00;
+    color: white;
+}
+
 input[type="file"] {
     background: rgba(0,0,0,0.4);
     padding: 0.5rem;
