@@ -92,7 +92,7 @@ function renderGrid(productsArray, container) {
         const card = document.createElement('div');
         card.className = 'product-card';
         card.onclick = (e) => openProductInline(product.id, e.currentTarget);
-        
+
         let badgesHTML = '<div class="badge-container">';
         product.tags.forEach(tag => {
             const isDiscount = tag.toLowerCase().includes('%') || tag.toLowerCase().includes('off');
@@ -134,8 +134,7 @@ function openProductInline(productId, cardElement) {
 
     const detailDiv = document.createElement('div');
     detailDiv.className = 'inline-detail';
-    
-    // UPDATED: Added onmouseenter to force the zoom start
+
     detailDiv.innerHTML = `
         <button class="close-inline-btn" onclick="this.parentElement.remove()">
             <i class="fas fa-times"></i>
@@ -177,39 +176,36 @@ function openProductInline(productId, cardElement) {
 }
 
 // === BULLETPROOF JS ZOOM MAGNIFIER ===
-
 function startZoom(container) {
-    if (window.innerWidth < 768) return; // Prevent zooming on mobile phones
+    if (window.innerWidth < 768) return; 
     const img = container.querySelector('.main-inline-img');
-    if (img) img.style.transform = 'scale(2.5)'; // Forcibly scales via JS
+    if (img) img.style.transform = 'scale(2.5)'; 
 }
 
 function zoomImage(e, container) {
     if (window.innerWidth < 768) return;
     const img = container.querySelector('.main-inline-img');
     if (!img) return;
-    
+
     const rect = container.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     const xPercent = (x / rect.width) * 100;
     const yPercent = (y / rect.height) * 100;
-    
+
     img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
 }
 
 function resetZoom(container) {
     const img = container.querySelector('.main-inline-img');
     if (img) {
-        img.style.transform = 'scale(1)'; // Resets the scale
+        img.style.transform = 'scale(1)'; 
         setTimeout(() => {
-            img.style.transformOrigin = 'center center'; // Re-centers the origin safely
+            img.style.transformOrigin = 'center center'; 
         }, 150); 
     }
 }
-
-// ===================================
 
 function changeQtyInline(amount, btnElement) {
     const input = btnElement.parentElement.querySelector('.inline-qty');
@@ -227,7 +223,7 @@ function addInlineToCart(productId, btnElement) {
     else shoppingCart.push({ id: product.id, name: product.name, price: activePrice, quantity: quantity });
 
     updateCartBadge();
-    
+
     const originalText = btnElement.innerHTML;
     btnElement.innerHTML = '<i class="fas fa-check"></i>';
     btnElement.style.background = '#00aa00';
@@ -257,7 +253,7 @@ function filterFromCarousel(linkData) {
     if (!linkData || linkData.trim() === "") return;
     const searchTerms = linkData.split(',').map(term => term.trim().toLowerCase());
     const filtered = storeProducts.filter(p => searchTerms.includes(p.id.toLowerCase()) || searchTerms.includes(p.category.toLowerCase()));
-    
+
     document.getElementById('main-hero').style.display = 'none';
     document.getElementById('home-extra-sections').style.display = 'none';
     closeAllViews();
@@ -286,7 +282,7 @@ function searchProducts() {
     document.getElementById('main-hero').style.display = 'none';
     document.getElementById('home-extra-sections').style.display = 'none';
     const filtered = storeProducts.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
-    
+
     if(catalogView.style.display === 'none') {
         closeAllViews(); 
         document.getElementById('main-hero').style.display = 'none';
@@ -329,12 +325,27 @@ function removeFromCart(productId) {
     renderCart();
 }
 
+// === NEW: Image Preview Function ===
+function previewReceipt(event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('receipt-preview-container');
+    const previewImage = document.getElementById('receipt-preview');
+    
+    if (file) {
+        previewImage.src = URL.createObjectURL(file); 
+        previewContainer.style.display = 'block';     
+    } else {
+        previewImage.src = '';
+        previewContainer.style.display = 'none';
+    }
+}
+
 function renderCart() {
     const container = document.getElementById('cart-items-container');
     const totalDisplay = document.getElementById('cart-total-price');
-    const depositDisplay = document.getElementById('deposit-amount'); // New element
+    const depositDisplay = document.getElementById('deposit-amount'); 
     container.innerHTML = '';
-    
+
     if (shoppingCart.length === 0) {
         container.innerHTML = '<p style="color: #aaa;">Your cart is empty.</p>';
         totalDisplay.innerText = '$0.00';
@@ -358,16 +369,16 @@ function renderCart() {
                 </div>
             </div>`;
     });
-    
+
     totalDisplay.innerText = `$${grandTotal.toFixed(2)}`;
-    
-    // Calculate and display the exact 50% KBZPay deposit
+
     if(depositDisplay) {
         const deposit = grandTotal / 2;
         depositDisplay.innerText = `$${deposit.toFixed(2)}`;
     }
 }
 
+// === UPDATED: Checkout Logic with Validation ===
 function processCheckout(platform) {
     if (shoppingCart.length === 0) return alert("Your cart is empty!");
 
@@ -375,14 +386,19 @@ function processCheckout(platform) {
     const phone = document.getElementById('cust-phone').value.trim();
     const address = document.getElementById('cust-address').value.trim();
     const receiptInput = document.getElementById('kbz-receipt');
+    const trxInput = document.getElementById('kbz-trx');
+    const trx = trxInput ? trxInput.value.trim() : ""; 
 
     if (!name || !phone || !address) {
-        return alert("Please fill out all delivery details.");
+        return alert("Please fill out all delivery details.\n(ပို့ဆောင်ရမည့် အချက်အလက်များကို ပြည့်စုံစွာဖြည့်ပေးပါ။)");
     }
 
-    // FORCING THE IMAGE UPLOAD
     if (!receiptInput || receiptInput.files.length === 0) {
-        return alert("⚠️ Please upload your KBZPay transaction screenshot to proceed with the order.");
+        return alert("⚠️ Please upload your KBZPay transaction screenshot.\n(ငွေလွှဲပြေစာ ဓာတ်ပုံထည့်သွင်းပေးပါ။)");
+    }
+
+    if (!/^\d{5}$/.test(trx)) {
+        return alert("⚠️ Please enter exactly the last 5 digits of your KBZPay Transaction ID.\n(Transaction ID ၏ နောက်ဆုံးဂဏန်း ၅ လုံးကို မှန်ကန်စွာထည့်ပါ။)");
     }
 
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff4444', '#ffffff', '#000000'] });
@@ -394,12 +410,12 @@ function processCheckout(platform) {
     const hh = now.getHours().toString().padStart(2, '0');
     const mins = now.getMinutes().toString().padStart(2, '0');
     const ss = now.getSeconds().toString().padStart(2, '0');
-    
+
     const orderId = `ORD-${yy}${mm}${dd}-${hh}${mins}${ss}`; 
 
     let grandTotal = 0;
     let itemsText = "";
-    
+
     shoppingCart.forEach(item => {
         const itemTotal = item.price * item.quantity;
         grandTotal += itemTotal;
@@ -408,15 +424,13 @@ function processCheckout(platform) {
 
     const deposit = grandTotal / 2;
 
-    // Updated Message formatting
-    const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}\n💰 TOTAL: $${grandTotal.toFixed(2)}\n💸 DEPOSIT PAID: $${deposit.toFixed(2)} (via KBZPay)\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n[CUSTOMER WILL ATTACH SCREENSHOT TO THIS CHAT]`;
-    
+    const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}\n💰 TOTAL: $${grandTotal.toFixed(2)}\n💸 DEPOSIT PAID: $${deposit.toFixed(2)} (KBZPay)\n🔢 TRX LAST 5 DIGITS: ${trx}\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n[CUSTOMER WILL ATTACH SCREENSHOT TO THIS CHAT]`;
+
     const encodedMessage = encodeURIComponent(orderMessage);
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    // Modified Alerts to instruct the user to attach the image manually
     if (isMobile) {
-        alert("✅ Order Details Saved!\n\nIMPORTANT: When the chat opens, please click the 'Paperclip' or 'Gallery' icon to attach the screenshot you just took.");
+        alert("✅ Order Details Saved!\n\nIMPORTANT: When the chat opens, please click the 'Paperclip' or 'Gallery' icon to attach the screenshot you just took.\n\n(Chat ပွင့်လာပါက သင်၏ ငွေလွှဲပြေစာပုံကို ပူးတွဲပို့ဆောင်ပေးပါ။)");
         if (platform === 'telegram') {
             window.open(`https://t.me/+${STORE_PHONE}?text=${encodedMessage}`, '_blank');
         } else if (platform === 'viber') {
@@ -424,8 +438,8 @@ function processCheckout(platform) {
         }
     } else {
         navigator.clipboard.writeText(orderMessage).then(() => {
-            alert("✅ Order copied to clipboard! \n\nIMPORTANT: Please PASTE the text into the chat, and manually ATTACH the KBZPay screenshot from your computer.");
-            
+            alert("✅ Order copied to clipboard! \n\nIMPORTANT: Please PASTE the text into the chat, and manually ATTACH the KBZPay screenshot from your computer.\n\n(Chat ပွင့်လာပါက စာကို Paste လုပ်ပြီး ငွေလွှဲပြေစာပုံကို ပူးတွဲပို့ဆောင်ပေးပါ။)");
+
             if (platform === 'telegram') {
                 window.open(`tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, '_self');
             } else if (platform === 'viber') {
