@@ -332,11 +332,13 @@ function removeFromCart(productId) {
 function renderCart() {
     const container = document.getElementById('cart-items-container');
     const totalDisplay = document.getElementById('cart-total-price');
+    const depositDisplay = document.getElementById('deposit-amount'); // New element
     container.innerHTML = '';
     
     if (shoppingCart.length === 0) {
         container.innerHTML = '<p style="color: #aaa;">Your cart is empty.</p>';
         totalDisplay.innerText = '$0.00';
+        if(depositDisplay) depositDisplay.innerText = '$0.00';
         return;
     }
 
@@ -356,18 +358,32 @@ function renderCart() {
                 </div>
             </div>`;
     });
+    
     totalDisplay.innerText = `$${grandTotal.toFixed(2)}`;
+    
+    // Calculate and display the exact 50% KBZPay deposit
+    if(depositDisplay) {
+        const deposit = grandTotal / 2;
+        depositDisplay.innerText = `$${deposit.toFixed(2)}`;
+    }
 }
 
-// === CHECKOUT LOGIC ===
 function processCheckout(platform) {
     if (shoppingCart.length === 0) return alert("Your cart is empty!");
 
     const name = document.getElementById('cust-name').value.trim();
     const phone = document.getElementById('cust-phone').value.trim();
     const address = document.getElementById('cust-address').value.trim();
+    const receiptInput = document.getElementById('kbz-receipt');
 
-    if (!name || !phone || !address) return alert("Please fill out all delivery details.");
+    if (!name || !phone || !address) {
+        return alert("Please fill out all delivery details.");
+    }
+
+    // FORCING THE IMAGE UPLOAD
+    if (!receiptInput || receiptInput.files.length === 0) {
+        return alert("⚠️ Please upload your KBZPay transaction screenshot to proceed with the order.");
+    }
 
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff4444', '#ffffff', '#000000'] });
 
@@ -390,12 +406,17 @@ function processCheckout(platform) {
         itemsText += `- ${item.quantity}x ${item.name} ($${itemTotal.toFixed(2)})\n`;
     });
 
-    const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}💰 TOTAL: $${grandTotal.toFixed(2)}\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}`;
-    const encodedMessage = encodeURIComponent(orderMessage);
+    const deposit = grandTotal / 2;
 
+    // Updated Message formatting
+    const orderMessage = `🛍️ NEW ORDER: #${orderId}\n\n🛒 ITEMS:\n${itemsText}\n💰 TOTAL: $${grandTotal.toFixed(2)}\n💸 DEPOSIT PAID: $${deposit.toFixed(2)} (via KBZPay)\n\n👤 CUSTOMER DETAILS:\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n[CUSTOMER WILL ATTACH SCREENSHOT TO THIS CHAT]`;
+    
+    const encodedMessage = encodeURIComponent(orderMessage);
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+    // Modified Alerts to instruct the user to attach the image manually
     if (isMobile) {
+        alert("✅ Order Details Saved!\n\nIMPORTANT: When the chat opens, please click the 'Paperclip' or 'Gallery' icon to attach the screenshot you just took.");
         if (platform === 'telegram') {
             window.open(`https://t.me/+${STORE_PHONE}?text=${encodedMessage}`, '_blank');
         } else if (platform === 'viber') {
@@ -403,7 +424,7 @@ function processCheckout(platform) {
         }
     } else {
         navigator.clipboard.writeText(orderMessage).then(() => {
-            alert("Order copied to clipboard! 📋\n\nPlease PASTE the message into the chat if it doesn't load fully.");
+            alert("✅ Order copied to clipboard! \n\nIMPORTANT: Please PASTE the text into the chat, and manually ATTACH the KBZPay screenshot from your computer.");
             
             if (platform === 'telegram') {
                 window.open(`tg://resolve?phone=${STORE_PHONE}&text=${encodedMessage}`, '_self');
