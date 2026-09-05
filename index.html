@@ -2,184 +2,205 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="AgriLinkBurma – Connecting global buyers to Myanmar's premier agricultural wholesale hubs. Specializing in pulses, beans, and grains.">
-    <meta name="keywords" content="Myanmar agricultural sourcing, Myanmar pulses exporter, AgriLinkBurma, Myanmar beans wholesale">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriLinkBurma | Myanmar Agricultural Sourcing Partner</title>
 
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Luxe | Elite Catalog</title>
+    <meta name="description" content="Exclusive high-end collection.">
+
+    <!-- Elegant Fonts: Cormorant Garamond (Headings) & Montserrat (Body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header class="navbar-wrapper">
-        <div class="container nav-container">
-            <a href="#home" class="brand-logo">
-                <i class="fas fa-leaf text-green"></i> AgriLink<span class="text-navy">Burma</span>
-            </a>
-            <nav class="main-nav">
-                <a href="#home" class="nav-item">Home</a>
-                <a href="#about" class="nav-item">How We Source</a>
-                <a href="#products" class="nav-item">Commodities</a>
-                <a href="#contact" class="btn btn-sm-contact"><i class="fas fa-headset"></i> Connect Now</a>
-            </nav>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="closeAllViews()">LUXE.</div>
+            <div class="nav-icons">
+                <i class="fas fa-search" onclick="toggleSearch()"></i>
+                <div class="cart-icon-wrapper" onclick="openCart()">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cart-count-badge">0</span>
+                </div>
+            </div>
         </div>
-    </header>
+    </nav>
 
-    <section id="home" class="hero-bg">
-        <div class="hero-overlay">
+    <div class="search-bar-container" id="search-bar" style="display: none;">
+        <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for products, categories...">
+        <i class="fas fa-times" onclick="toggleSearch()"></i>
+    </div>
+
+    <!-- === CATALOG VIEW === -->
+    <div id="catalog-view">
+        <header class="hero" id="main-hero">
             <div class="hero-content">
-                <span class="hero-badge">YANGON, MYANMAR</span>
-                <h1>Strategic Sourcing from Myanmar's <span class="text-green">Major Agri-Hubs</span></h1>
-                <p>We bridge the gap between international buyers and Myanmar's complex wholesale networks. Verified quality, negotiated pricing, and secure FOB/CIF logistics.</p>
-                <div class="hero-btns">
-                    <a href="#products" class="btn btn-primary"><i class="fas fa-box-open"></i> View Export Catalog</a>
-                    <button onclick="openGeneralContactModal()" class="btn btn-outline-white"><i class="fas fa-comments"></i> Direct Chat Inquiry</button>
+                <h1>The Elite Collection</h1>
+                <p>Dark, elegant, and unapologetic.</p>
+            </div>
+        </header>
+
+        <main class="store-container">
+            <div class="filter-bar" id="filter-bar">
+                <button class="filter-btn active" onclick="filterProducts('All')">All</button>
+                <button class="filter-btn" onclick="filterProducts('Outerwear')">Outerwear</button>
+                <button class="filter-btn" onclick="filterProducts('Tops')">Tops</button>
+                <button class="filter-btn" onclick="filterProducts('Bottoms')">Bottoms</button>
+                <button class="filter-btn" onclick="filterProducts('Accessories')">Accessories</button>
+            </div>
+
+            <div class="product-grid" id="product-grid"></div>
+
+            <div id="home-extra-sections">
+                <div class="related-section">
+                    <h2>Newly Arrived</h2>
+                    <div class="product-grid" id="new-arrivals-grid"></div>
+                </div>
+                <div class="related-section">
+                    <h2>Trending Now</h2>
+                    <div class="product-grid" id="trending-grid"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Infinite Image Carousel -->
+        <div class="model-carousel" id="model-carousel-container">
+            <div class="model-track" id="model-track"></div>
+        </div>
+
+        <!-- Partner Logos Section -->
+        <section class="partner-logos-section">
+            <p class="partner-title">IN PARTNERSHIP WITH</p>
+            <div class="partner-track">
+                <span>LOUIS VUITTON</span>
+                <span>ZARA</span>
+                <span>GUCCI</span>
+                <span>PRADA</span>
+                <span>CHANEL</span>
+            </div>
+        </section>
+    </div>
+
+    <!-- === CART & CHECKOUT VIEW === -->
+    <div id="cart-view" style="display: none;">
+        <main class="detail-container">
+            <button class="back-btn" onclick="closeAllViews()">
+                <i class="fas fa-arrow-left"></i> Continue Shopping
+            </button>
+
+            <div class="cart-layout">
+                <div class="cart-items-section">
+                    <h2>Your Bag</h2>
+                    <div id="cart-items-container"></div>
+                    <div class="cart-total">
+                        <span>Total:</span>
+                        <span id="cart-total-price">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="checkout-section">
+                    <h2>Checkout Details</h2>
+                    <form id="checkout-form">
+                        <div class="form-group">
+                            <label for="cust-name">Name / အမည် *</label>
+                            <input type="text" id="cust-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cust-phone">Phone Number / ဖုန်းနံပါတ် *</label>
+                            <input type="tel" id="cust-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cust-address">Delivery Address / ပို့ဆောင်ရမည့်လိပ်စာ *</label>
+                            <textarea id="cust-address" rows="3" required></textarea>
+                        </div>
+
+                        <!-- KBZPay Section -->
+                        <div class="payment-section">
+                            <h3 class="payment-title" style="margin-bottom: 10px;">
+                                KBZPay Deposit (50%)<br>
+                                <span style="font-size: 1rem; color: var(--accent);">KBZPay ဖြင့် ငွေ ၅၀% ကြိုတင်ပေးချေရန်</span>
+                            </h3>
+                            <p class="payment-instructions">
+                                To secure your order, please transfer exactly <strong id="deposit-amount" class="highlight-amount">$0.00</strong> to the account below:<br>
+                                <span style="font-size: 0.8rem; color: #bbb;">အော်ဒါတင်ခြင်းကို အတည်ပြုရန်အတွက် အောက်ပါအကောင့်သို့ ငွေတိတိကျကျ လွှဲပြောင်းပေးပါ -</span>
+                            </p>
+                            
+                            <div class="kbz-account-card">
+                                <!-- The new Copy Button row -->
+                                <div class="kbz-phone-row">
+                                    <strong id="kbz-phone">09 793155856</strong>
+                                    <button type="button" class="copy-phone-btn" onclick="copyPhoneNumber(this)" title="Copy Phone Number">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                </div>
+                                <p>U Zaw Minn Paing</p>
+                            </div>
+
+                            <!-- Image Upload & Preview -->
+                            <div class="form-group" style="text-align: left;">
+                                <label for="kbz-receipt">
+                                    Upload Transaction Screenshot *<br>
+                                    <span style="font-size: 0.75rem; color: #aaa;">ငွေလွှဲပြေစာ ဓာတ်ပုံထည့်သွင်းရန် (မဖြစ်မနေ)</span>
+                                </label>
+                                <input type="file" id="kbz-receipt" accept="image/*" required onchange="previewReceipt(event)">
+                                
+                                <!-- Image Preview Container -->
+                                <div id="receipt-preview-container" style="display: none; margin-top: 10px; text-align: center;">
+                                    <img id="receipt-preview" src="" alt="Receipt Preview" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                                </div>
+                                
+                                <small style="color: #ff758c; font-size: 0.75rem; display: block; margin-top: 5px;">
+                                    * You will also need to attach this image in the chat.<br>
+                                    (ဤဓာတ်ပုံကို Chat ထဲတွင်လည်း ပေးပို့ရမည်ဖြစ်ပါသည်။)
+                                </small>
+                            </div>
+
+                            <!-- 5-Digit Transaction ID -->
+                            <div class="form-group" style="text-align: left; margin-top: 1rem;">
+                                <label for="kbz-trx">
+                                    Last 5 Digits of Transaction ID *<br>
+                                    <span style="font-size: 0.75rem; color: #aaa;">လုပ်ငန်းစဉ်အမှတ် (Transaction ID) ၏ နောက်ဆုံးဂဏန်း ၅ လုံး</span>
+                                </label>
+                                <input type="text" id="kbz-trx" maxlength="5" placeholder="e.g. 12345" required>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="checkout-actions">
+                        <p class="action-title">Place Order Via:</p>
+                        <button class="checkout-btn telegram-btn" type="button" onclick="processCheckout('telegram')"><i class="fab fa-telegram-plane"></i> Send to Telegram</button>
+                        <button class="checkout-btn viber-btn" type="button" onclick="processCheckout('viber')"><i class="fab fa-viber"></i> Send to Viber</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="store-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>LUXE.</h2>
+                <p>Curated fashion for the modern aesthetic.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Customer Care</h3>
+                <a href="#">Contact Us</a>
+                <a href="#">Shipping & Returns</a>
+            </div>
+            <div class="footer-social">
+                <h3>Follow Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
                 </div>
             </div>
         </div>
-    </section>
-
-    <section id="about" class="section bg-light">
-        <div class="container">
-            <div class="section-header text-center">
-                <span class="section-tag">OUR APPROACH</span>
-                <h2>Navigating the Market for You</h2>
-                <div class="underline"></div>
-            </div>
-
-            <div class="about-grid">
-                <div class="about-text">
-                    <p>International commodity trading in Myanmar requires deep local knowledge. <strong>AgriLinkBurma</strong> does not pretend to own the farms; instead, we offer something far more valuable to global buyers: <strong>Access to the Hubs.</strong></p>
-                    <p>We act as your dedicated local representative, connecting you directly with the established tier-1 wholesale suppliers and processing mills in Yangon and major regional centers.</p>
-                    <p><strong>Our Role in Your Supply Chain:</strong></p>
-                    <ul class="benefit-list">
-                        <li><i class="fas fa-check-circle"></i> <strong>Market Consolidation:</strong> We source from multiple verified hub-suppliers to fulfill bulk orders quickly.</li>
-                        <li><i class="fas fa-check-circle"></i> <strong>Quality Verification:</strong> We oversee sorting processes and integrate third-party inspections (SGS/Bureau Veritas) prior to loading.</li>
-                        <li><i class="fas fa-check-circle"></i> <strong>Export Logistics:</strong> Handling the complex export documentation, phytosanitary certs, and customs clearance seamlessly.</li>
-                    </ul>
-                </div>
-                <div class="about-stats shadow-md">
-                    <div class="stat-box">
-                        <i class="fas fa-globe-asia"></i>
-                        <h3>Global Reach</h3>
-                        <p>Serving India, UAE, China & ASEAN</p>
-                    </div>
-                    <div class="stat-box">
-                        <i class="fas fa-handshake"></i>
-                        <h3>Verified Network</h3>
-                        <p>Partnered with Top Regional Hubs</p>
-                    </div>
-                    <div class="stat-box">
-                        <i class="fas fa-ship"></i>
-                        <h3>FOB & CIF</h3>
-                        <p>Flexible Shipping Terms</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>  
-
-    <section id="products" class="section">
-        <div class="container">
-            <div class="section-header text-center">
-                <span class="section-tag">EXPORT CATALOG</span>
-                <h2>Available Commodities</h2>
-                <div class="underline"></div>
-                <p style="max-width: 600px; margin: 0 auto; color: var(--text-muted);">Current availability from our network of processing mills and wholesale hubs. Connect directly for today's market pricing.</p>
-            </div>
-
-            <div id="dynamic-products" class="product-grid">
-                <div class="loading-spinner" style="grid-column: 1/-1;">
-                    <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-                    <p style="margin-top: 10px;">Loading live database...</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="contact" class="section bg-navy text-white">
-        <div class="container text-center">
-            <h2 style="font-size: 2.2rem; margin-bottom: 1rem; color: #fff;">Skip the Forms. Talk to a Human.</h2>
-            <p style="max-width: 600px; margin: 0 auto 3rem; color: #cbd5e1; font-size: 1.1rem;">Commodity trading moves fast. Choose your preferred platform below to instantly connect with Zaw Min Paing in Yangon for live pricing, availability, and sourcing requests.</p>
-            
-            <div class="direct-contact-grid">
-                <a href="https://wa.me/959974500087" target="_blank" class="contact-action-card whatsapp">
-                    <i class="fab fa-whatsapp"></i>
-                    <h3>WhatsApp</h3>
-                    <p>+95 9 974 500 087</p>
-                    <span>Message Now &rarr;</span>
-                </a>
-                
-                <a href="https://t.me/+959793155856" target="_blank" class="contact-action-card telegram">
-                    <i class="fab fa-telegram-plane"></i>
-                    <h3>Telegram</h3>
-                    <p>+95 9 793 155 856</p>
-                    <span>Message Now &rarr;</span>
-                </a>
-                
-                <a href="viber://chat?number=%2B959974500087" target="_blank" class="contact-action-card viber">
-                    <i class="fab fa-viber"></i>
-                    <h3>Viber</h3>
-                    <p>+95 9 974 500 087</p>
-                    <span>Message Now &rarr;</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <footer class="corporate-footer">
-        <div class="container">
-            <div class="footer-top">
-                <div class="footer-brand">
-                    <h2><i class="fas fa-leaf text-green"></i> AgriLinkBurma</h2>
-                    <p>Your strategic sourcing partner bridging the gap between Myanmar's agricultural hubs and global markets.</p>
-                </div>
-                <div class="footer-contact">
-                    <h3>Direct Contacts</h3>
-                    <ul>
-                        <li><i class="fas fa-phone-alt"></i> +95 9 793 155 856 (TG / Call)</li>
-                        <li><i class="fab fa-whatsapp"></i> +95 9 974 500 087 (WA / Viber)</li>
-                        <li><i class="fas fa-envelope"></i> zawminn.p@gmail.com</li>
-                        <li><i class="fas fa-map-marker-alt"></i> Yangon, Myanmar</li>
-                    </ul>
-                </div>
-                <div class="footer-social">
-                    <h3>Connect Instantly</h3>
-                    <div class="social-icons">
-                        <a href="https://wa.me/959974500087" target="_blank" class="wa"><i class="fab fa-whatsapp"></i></a>
-                        <a href="https://t.me/+959793155856" target="_blank" class="tg"><i class="fab fa-telegram-plane"></i></a>
-                        <a href="viber://chat?number=%2B959974500087" target="_blank" class="vb"><i class="fab fa-viber"></i></a>
-                        <a href="mailto:zawminn.p@gmail.com" class="em"><i class="fas fa-envelope"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 AgriLinkBurma. Facilitating Global Trade.</p>
-            </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Luxe Elite. All rights reserved.</p>
         </div>
     </footer>
-
-    <div class="modal-overlay" id="inquiry-modal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3>Select Chat Platform</h3>
-                <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body text-center">
-                <p id="modal-context-text" style="color: var(--text-muted); margin-bottom: 1.5rem;">Connect with Zaw Min Paing directly to discuss this requirement.</p>
-                <div class="modal-btn-col">
-                    <button class="btn btn-modal-wa" onclick="dispatchMessage('whatsapp')"><i class="fab fa-whatsapp"></i> Continue on WhatsApp</button>
-                    <button class="btn btn-modal-tg" onclick="dispatchMessage('telegram')"><i class="fab fa-telegram-plane"></i> Continue on Telegram</button>
-                    <button class="btn btn-modal-vb" onclick="dispatchMessage('viber')"><i class="fab fa-viber"></i> Continue on Viber</button>
-                    <div style="margin: 1rem 0; border-bottom: 1px solid var(--border-color);"></div>
-                    <button class="btn btn-outline" style="width: 100%;" onclick="dispatchMessage('email')"><i class="fas fa-envelope"></i> Send via Email</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="script.js"></script>
